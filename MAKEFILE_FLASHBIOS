@@ -1,0 +1,228 @@
+#**************************************************************************
+#*                                                                        *
+#*               _____   ____    _____         ___      ____              *
+#*              |  _  | |  _ `  |  ___|       |   `    / ___|             *
+#*              | |_| | | | ` | | |_    ____  | [] |  | / __              *
+#*              |  ___| | | | | |  _|  |____| |  _ <  | ||_ |             *
+#*              | |     | |_/ | | |___        | |_| | | |_| |             *
+#*              |_|     |____/  |_____|       |____/   `___/              *
+#*                                                                        *
+#*                                                                        *
+#* Project:          BIOSControl                                          *
+#* (c) copyright     Harman-Becker Automotive Systems                     *
+#* Author:           Arno Kutzki  (EEHB) Tel. 1758                        *
+#**************************************************************************
+
+
+# -------------------------------------------------------------------------
+# Common Makefile for the NEC V850 Toolchain of the Green Hills Compiler
+# -------------------------------------------------------------------------
+#
+# The makefile has to be configured for the actual project by setting the
+# variables PRJ_NAME, PRJ_SRC, STD_SRC and STD_ASM.
+# Common compiler switches can be set in the variable CFLAGS; under normal
+# circumstances, a change is not necessary.
+#
+# -------------------------------------------------------------------------
+
+# =========================================================================
+# Project Definition
+# =========================================================================
+
+#
+# all objects are created and linked in the project-directory
+
+
+
+# TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TOD
+# TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TOD
+
+# Project Name: The main target of the makefile is according to this ------
+#               setting 'PRJ_NAME'.h86
+PRJ_NAME =  L122_MBC_FLASHBIOS
+
+# Project C Sources: List here all project dependend C source files. ------
+PRJ_SRC =
+
+# Project A66 Sources: List here all project dependend A66 source files. ------
+PRJ_ASM =	df3554_startup.850
+
+# Standard C Sources: List here all needed standard C source files.	-------
+STD_SRC =   main.c       global.c    hw_init.c      tool.c      buffer.c\
+            timer.c      port.c      iic.c          iic_0.c     inic.c\
+            script_mbc.c ser.c       gateway.c   interprt.c     comm_mbc.c\
+            hbbios_std.c printf.c    ram.c       spi_csig.c     adc.c\
+            pwm.c        mostmsg.c   iic_1.c
+
+# Standard Assembler Sources: List here all needed standard assembler -----
+#                             files. Do not forget to update its
+#                             dependencies further down.
+STD_ASM =
+
+
+
+# TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO #	TOD
+# TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO # TODO #	TOD
+
+
+# =========================================================================
+
+CFLAGS	  =     -registermode=26 -c -MD -I. -sda=all -pic -G -inline_prologue -list \
+                -DHOSTTIMEOUT=0 -DFLASH_LIB_COPY=1 -DCPU_TYPE=CPU_NEC_V850E2_DF3554\
+				--no_long_long -notda -noobj -Onounroll8 -Onounrollbig -Ospeed -Onoprintfuncs\
+				-passsource -prepare_dispose -cpu=v850e2 -OL -filetype.c
+
+# =========================================================================
+
+ASMFLAGS =      -registermode=26 -c -MD -I. -sda=all -pic -G -inline_prologue -list \
+                -DHOSTTIMEOUT=0 -DFLASH_LIB_COPY=1 -DCPU_TYPE=CPU_NEC_V850E2_DF3554\
+				--no_long_long -notda -noobj -Onounroll8 -Onounrollbig -Ospeed \
+				-passsource -prepare_dispose -cpu=v850e2 -OL
+
+# =========================================================================
+
+LINKFLAGS =    -language=c -MD -I. -sda=all -pic -delete\
+			   -map -G -inline_prologue --no_long_long \
+			   -notda -Onounroll8 -Onounrollbig -Ospeed -prepare_dispose -cpu=v850e2 \
+			   -DFLASH_LIB_COPY=1 -OL
+
+# =========================================================================
+
+# Linkerfile
+LINK_FILE = df3554_l122.ld
+
+
+# =========================================================================
+# Environment Definition
+# =========================================================================
+
+STD_PATH =  v850e2_std
+VPATH =     $(STD_PATH)
+
+# =========================================================================
+# Tool Definition
+# =========================================================================
+
+.SUFFIXES:
+.SUFFIXES: .c .850 .h .o .d
+
+# Definitions used for subst function
+comma :=,
+space :=" "
+linefeed :=\n
+
+
+
+# Tool Path ---------------------------------------------------------------
+TPATH     = C:/GHS/v800517D
+
+# C Compiler Definition ---------------------------------------------------
+CC		  = ccv850
+
+# Assembler Definition ---------------------------------------------------
+AS		  = ccv850
+
+# Linker Definition -------------------------------------------------------
+LD		 =  ccv850
+
+
+# =========================================================================
+# Lists
+# =========================================================================
+
+# Creation of Lists -------------------------------------------------------
+C_OBJ	:= $(STD_SRC:.c=.o) $(PRJ_SRC:.c=.o)
+S_OBJ	:= $(STD_ASM:.850=.o) $(PRJ_ASM:.850=.o)
+OBJ     := $(C_OBJ) $(S_OBJ)
+
+C_OBJ_L := $(addprefix $(STD_PATH)/,$(STD_SRC:.c=.o)) $(PRJ_SRC:.c=.o)
+S_OBJ_L	:= $(addprefix $(STD_PATH)/,$(STD_ASM:.850=.o)) $(PRJ_ASM:.850=.o)
+OBJ_L   := $(C_OBJ_L) $(S_OBJ_L)
+
+# =========================================================================
+# Rules
+# =========================================================================
+
+# list here all files you need....
+#.PHONY: all
+all : $(PRJ_NAME).bin $(PRJ_NAME).hex
+
+# =========================================================================
+
+# Linker rule ------------------------------------------------------
+$(PRJ_NAME): $(OBJ_L)
+	@echo.exe -----------------------------------------------------------
+	@echo.exe Linking Project $(PRJ_NAME)
+	@echo.exe -----------------------------------------------------------
+	$(TPATH)/$(LD) $(LINKFLAGS) $(LINK_FILE) $(OBJ_L) \
+	-o $(PRJ_NAME)
+	$(TPATH)/gsize $(PRJ_NAME)
+
+# =========================================================================
+
+# HEX-File creation -------------------------------------------------------
+$(PRJ_NAME).hex: $(PRJ_NAME)
+	@echo.exe -----------------------------------------------------------
+	@echo.exe Creating Motorola S-Record-file $(PRJ_NAME).hex ...
+	@echo.exe -----------------------------------------------------------
+	$(TPATH)/gsrec $(PRJ_NAME) -o $(PRJ_NAME).hex
+
+# =========================================================================
+
+# BIN-File creation -------------------------------------------------------
+$(PRJ_NAME).bin: $(PRJ_NAME)
+	@echo.exe -----------------------------------------------------------
+	@echo.exe Creating Binary-file $(PRJ_NAME).bin ...
+	@echo.exe -----------------------------------------------------------
+	$(TPATH)/gmemfile $(PRJ_NAME) -o $(PRJ_NAME).bin
+
+# =========================================================================
+
+# Pattern Rule for Compiling C Sourcefiles --------------------------------
+#%.o : %.c
+$(C_OBJ_L) : %.o : %.c
+	@echo.exe -----------------------------------------------------------
+	@echo.exe Compiling source file $< to $@...
+	@echo.exe -----------------------------------------------------------
+	$(TPATH)/$(CC) -I $(STD_PATH) $(CFLAGS) $< -o $@
+
+# =========================================================================
+
+# Pattern Rule for Assembly Sourcefiles -----------------------------------
+#%.o : %.850
+$(S_OBJ_L) : %.o : %.850
+	@echo.exe -----------------------------------------------------------
+	@echo.exe Assembling source file $< to $@...
+	@echo.exe -----------------------------------------------------------
+	$(TPATH)/$(AS) -I $(STD_PATH) $(ASMFLAGS) $< -o $@
+
+# =========================================================================
+
+# Target To Clean the Project Directory From Created Files ----------------
+.PHONY: clean
+clean:
+	@echo.exe -----------------------------------------------------------
+	@echo.exe Cleaning the Project directory ...
+	@echo.exe -----------------------------------------------------------
+	-rm *.dnm
+	-rm *.dla
+	-rm $(PRJ_NAME)
+	-rm $(PRJ_NAME).gpj
+	-rm $(PRJ_NAME).map
+	-rm $(PRJ_NAME).bin
+	-rm $(PRJ_NAME).hex
+	-rm *.dbo
+	-rm *.d
+	-rm *.o
+	-rm *.lst
+	-rm *.i
+	-rm $(STD_PATH)/*.o
+	-rm $(STD_PATH)/*.d
+	-rm $(STD_PATH)/*.lst
+	-rm $(STD_PATH)/*.i
+	-rm $(STD_PATH)/*.dbo
+	-rm $(STD_PATH)/SelfLib/*.o
+	-rm $(STD_PATH)/SelfLib/*.d
+	-rm $(STD_PATH)/SelfLib/*.lst
+	-rm $(STD_PATH)/SelfLib/*.i
+	-rm $(STD_PATH)/SelfLib/*.dbo

@@ -1,0 +1,12 @@
+L122_MBC_FLASHBIOS: df3554_l122.ld C:\GHS\v800517D\lib\v850e2\crt0.o \
+ v850e2_std/main.o v850e2_std/global.o v850e2_std/hw_init.o v850e2_std/tool.o \
+ v850e2_std/buffer.o v850e2_std/timer.o v850e2_std/port.o v850e2_std/iic.o \
+ v850e2_std/iic_0.o v850e2_std/inic.o v850e2_std/script_mbc.o \
+ v850e2_std/ser.o v850e2_std/gateway.o v850e2_std/interprt.o \
+ v850e2_std/comm_mbc.o v850e2_std/hbbios_std.o v850e2_std/printf.o \
+ v850e2_std/ram.o v850e2_std/spi_csig.o v850e2_std/adc.o v850e2_std/pwm.o \
+ v850e2_std/mostmsg.o v850e2_std/iic_1.o df3554_startup.o \
+ C:\GHS\v800517D\lib\v850e2\libmulti.a C:\GHS\v800517D\lib\v850e2\libansi.a \
+ C:\GHS\v800517D\lib\v850e2\libmath.a C:\GHS\v800517D\lib\v850e2\libind.a \
+ C:\GHS\v800517D\lib\v850e2\libstartup.a C:\GHS\v800517D\lib\v850e2\libsys.a \
+ C:\GHS\v800517D\lib\v850e2\libarch.a

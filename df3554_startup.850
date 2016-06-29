@@ -1,0 +1,1699 @@
+-------------------------------------------------------------------------------
+-- Module      = DF3554_startup.850
+-- Version     = V1.20
+--               extracted from device file DF3554.800   by DeFiXE2 0.8.5.5
+-------------------------------------------------------------------------------
+--                                  COPYRIGHT
+-------------------------------------------------------------------------------
+-- Copyright (c) 2012 by Renesas Electronics Europe GmbH,
+--               a company of the Renesas Electronics Corporation
+-------------------------------------------------------------------------------
+-- Purpose:      Startup Code
+--
+-------------------------------------------------------------------------------
+--
+-- Warranty Disclaimer
+--
+-- Because the Product(s) is licensed free of charge, there is no warranty
+-- of any kind whatsoever and expressly disclaimed and excluded by Renesas,
+-- either expressed or implied, including but not limited to those for
+-- non-infringement of intellectual property, merchantability and/or
+-- fitness for the particular purpose.
+-- Renesas shall not have any obligation to maintain, service or provide bug
+-- fixes for the supplied Product(s) and/or the Application.
+--
+-- Each User is solely responsible for determining the appropriateness of
+-- using the Product(s) and assumes all risks associated with its exercise
+-- of rights under this Agreement, including, but not limited to the risks
+-- and costs of program errors, compliance with applicable laws, damage to
+-- or loss of data, programs or equipment, and unavailability or
+-- interruption of operations.
+--
+-- Limitation of Liability
+--
+-- In no event shall Renesas be liable to the User for any incidental,
+-- consequential, indirect, or punitive damage (including but not limited
+-- to lost profits) regardless of whether such liability is based on breach
+-- of contract, tort, strict liability, breach of warranties, failure of
+-- essential purpose or otherwise and even if advised of the possibility of
+-- such damages. Renesas shall not be liable for any services or products
+-- provided by third party vendors, developers or consultants identified or
+-- referred to the User by Renesas in connection with the Product(s) and/or
+-- the Application.
+--
+-------------------------------------------------------------------------------
+-- Environment:
+--              Device:         UPD70F3554  
+--              IDE:            GHS Multi for V800
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-------------  Selection of external interrupt service handler
+-------------  User modifiable section
+-------------  Please uncomment the required interrupt service handler
+-------------------------------------------------------------------------------
+#include <DF3554_IRQ.h>
+
+-------------------------------------------------------------------------------
+-------------  Basic Initialisation of the controller
+-------------  User modifiable section
+-------------------------------------------------------------------------------
+.weak	___lowinit
+.text
+_RESET:
+  -- Initialisation of the global pointer
+  movhi	hi(___ghsbegin_sdabase),zero,gp
+  movea	lo(___ghsbegin_sdabase),gp,gp
+
+  -- Initialisation of the text pointer
+  movhi	hi(___ghsbegin_robase),zero,tp
+  movea	lo(___ghsbegin_robase),tp,tp
+
+  -- Initialisation of the stack pointer
+  movhi	hi(___ghsend_stack-4),zero,sp
+  movea	lo(___ghsend_stack-4),sp,sp
+  mov -4,r1
+  and r1,sp
+
+  -- Jump to the HW Initialisation function
+  jarl	___lowinit, lp
+  -- Jump to the Initialisation functions of the library,
+  -- from there to main()
+  jr __start
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-------------  Add section ".intvect" to your linker command file
+-------------  at address 0x0000
+-------------
+-------------	i.e.	.intvect    0x0000:
+-------------------------------------------------------------------------------
+.section".intvect",.text
+
+-------------------------------------------------------------------------------
+-------------  Initializing of interrupt vector table
+-------------  Please don't modify this section
+-------------------------------------------------------------------------------
+.extern _unused_isr
+.global _RESET
+_PROGRAM_START:
+.global _PROGRAM_START
+
+  .offset 0x0000
+  #if (SYSCALLEX_ENABLE > 0x00000000)
+    .extern _SYSCALLEX
+    jr _SYSCALLEX
+  #endif
+  #if (RESET_ENABLE > 0x00000000)
+    .extern _RESET
+    jr _RESET
+  #endif
+  #if (  (SYSCALLEX_ENABLE == 0x00000000)  &&  (RESET_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+#ifdef __OS_HANDLES__      
+
+/* OS interrupt code can be added here */
+
+#else /* __OS_HANDLES__ */ 
+
+  .offset 0x0010
+  #if (FEINT_ENABLE > 0x00000000)
+    .extern _FEINT
+    jr _FEINT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0020
+  #if (WDTA1TNMI_ENABLE > 0x00000000)
+    .extern _WDTA1TNMI
+    jr _WDTA1TNMI
+  #endif
+  #if (WDTA0TNMI_ENABLE > 0x00000000)
+    .extern _WDTA0TNMI
+    jr _WDTA0TNMI
+  #endif
+  #if (NMI0_ENABLE > 0x00000000)
+    .extern _NMI0
+    jr _NMI0
+  #endif
+  #if (  (WDTA1TNMI_ENABLE == 0x00000000)  &&  (WDTA0TNMI_ENABLE == 0x00000000)  &&  (NMI0_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0030
+  #if (UCPOP_ENABLE > 0x00000000)
+    .extern _UCPOP
+    jr _UCPOP
+  #endif
+  #if (TSI_ENABLE > 0x00000000)
+    .extern _TSI
+    jr _TSI
+  #endif
+  #if (SYSERR_ENABLE > 0x00000000)
+    .extern _SYSERR
+    jr _SYSERR
+  #endif
+  #if (RIEX_ENABLE > 0x00000000)
+    .extern _RIEX
+    jr _RIEX
+  #endif
+  #if (PPI_ENABLE > 0x00000000)
+    .extern _PPI
+    jr _PPI
+  #endif
+  #if (MIP_ENABLE > 0x00000000)
+    .extern _MIP
+    jr _MIP
+  #endif
+  #if (MEP_ENABLE > 0x00000000)
+    .extern _MEP
+    jr _MEP
+  #endif
+  #if (MDP_ENABLE > 0x00000000)
+    .extern _MDP
+    jr _MDP
+  #endif
+  #if (FETRAPEX_ENABLE > 0x00000000)
+    .extern _FETRAPEX
+    jr _FETRAPEX
+  #endif
+  #if (  (UCPOP_ENABLE == 0x00000000)  &&  (TSI_ENABLE == 0x00000000)  &&  (SYSERR_ENABLE == 0x00000000)  &&  (RIEX_ENABLE == 0x00000000)  &&  (PPI_ENABLE == 0x00000000)  &&  (MIP_ENABLE == 0x00000000)  &&  (MEP_ENABLE == 0x00000000)  &&  (MDP_ENABLE == 0x00000000)  &&  (FETRAPEX_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0040
+  #if (EITRAP0_ENABLE > 0x00000000)
+    .extern _EITRAP0
+    jr _EITRAP0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0050
+  #if (EITRAP1_ENABLE > 0x00000000)
+    .extern _EITRAP1
+    jr _EITRAP1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0060
+  #if (SYNCDB_ENABLE > 0x00000000)
+    .extern _SYNCDB
+    jr _SYNCDB
+  #endif
+  #if (SS_ENABLE > 0x00000000)
+    .extern _SS
+    jr _SS
+  #endif
+  #if (DBTRAPEX_ENABLE > 0x00000000)
+    .extern _DBTRAPEX
+    jr _DBTRAPEX
+  #endif
+  #if (ASYNCDB_ENABLE > 0x00000000)
+    .extern _ASYNCDB
+    jr _ASYNCDB
+  #endif
+  #if (  (SYNCDB_ENABLE == 0x00000000)  &&  (SS_ENABLE == 0x00000000)  &&  (DBTRAPEX_ENABLE == 0x00000000)  &&  (ASYNCDB_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0070
+  #if (FPP_ENABLE > 0x00000000)
+    .extern _FPP
+    jr _FPP
+  #endif
+  #if (FPI_ENABLE > 0x00000000)
+    .extern _FPI
+    jr _FPI
+  #endif
+  #if (  (FPP_ENABLE == 0x00000000)  &&  (FPI_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0080
+  #if (INTWDTA0_ENABLE > 0x00000000)
+    .extern _INTWDTA0
+    jr _INTWDTA0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0090
+  #if (INTWDTA1_ENABLE > 0x00000000)
+    .extern _INTWDTA1
+    jr _INTWDTA1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x00a0
+  #if (INTLVI_ENABLE > 0x00000000)
+    .extern _INTLVI
+    jr _INTLVI
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x00c0
+  #if (INTVCPC0_ENABLE > 0x00000000)
+    .extern _INTVCPC0
+    jr _INTVCPC0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x00d0
+  #if (INTVCPC1_ENABLE > 0x00000000)
+    .extern _INTVCPC1
+    jr _INTVCPC1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x00e0
+  #if (INTRTCA01S_ENABLE > 0x00000000)
+    .extern _INTRTCA01S
+    jr _INTRTCA01S
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x00f0
+  #if (INTRTCA0AL_ENABLE > 0x00000000)
+    .extern _INTRTCA0AL
+    jr _INTRTCA0AL
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0100
+  #if (INTRTCA0R_ENABLE > 0x00000000)
+    .extern _INTRTCA0R
+    jr _INTRTCA0R
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0110
+  #if (INTP0_ENABLE > 0x00000000)
+    .extern _INTP0
+    jr _INTP0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0120
+  #if (INTP1_ENABLE > 0x00000000)
+    .extern _INTP1
+    jr _INTP1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0130
+  #if (INTP2_ENABLE > 0x00000000)
+    .extern _INTP2
+    jr _INTP2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0140
+  #if (INTP3_ENABLE > 0x00000000)
+    .extern _INTP3
+    jr _INTP3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0150
+  #if (INTP4_ENABLE > 0x00000000)
+    .extern _INTP4
+    jr _INTP4
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0160
+  #if (INTP5_ENABLE > 0x00000000)
+    .extern _INTP5
+    jr _INTP5
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0170
+  #if (INTP6_ENABLE > 0x00000000)
+    .extern _INTP6
+    jr _INTP6
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0180
+  #if (INTP7_ENABLE > 0x00000000)
+    .extern _INTP7
+    jr _INTP7
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0190
+  #if (INTP8_ENABLE > 0x00000000)
+    .extern _INTP8
+    jr _INTP8
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x01a0
+  #if (INTP9_ENABLE > 0x00000000)
+    .extern _INTP9
+    jr _INTP9
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x01b0
+  #if (INTP10_ENABLE > 0x00000000)
+    .extern _INTP10
+    jr _INTP10
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x01c0
+  #if (INTTAUA0I0_ENABLE > 0x00000000)
+    .extern _INTTAUA0I0
+    jr _INTTAUA0I0
+  #endif
+  #if (INTTAPA0IPEK0_ENABLE > 0x00000000)
+    .extern _INTTAPA0IPEK0
+    jr _INTTAPA0IPEK0
+  #endif
+  #if (  (INTTAUA0I0_ENABLE == 0x00000000)  &&  (INTTAPA0IPEK0_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x01d0
+  #if (INTTAUA0I1_ENABLE > 0x00000000)
+    .extern _INTTAUA0I1
+    jr _INTTAUA0I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x01e0
+  #if (INTTAUA0I2_ENABLE > 0x00000000)
+    .extern _INTTAUA0I2
+    jr _INTTAUA0I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x01f0
+  #if (INTTAUA0I3_ENABLE > 0x00000000)
+    .extern _INTTAUA0I3
+    jr _INTTAUA0I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0200
+  #if (INTTAUA0I4_ENABLE > 0x00000000)
+    .extern _INTTAUA0I4
+    jr _INTTAUA0I4
+  #endif
+  #if (INTTAPA0IVLY0_ENABLE > 0x00000000)
+    .extern _INTTAPA0IVLY0
+    jr _INTTAPA0IVLY0
+  #endif
+  #if (  (INTTAUA0I4_ENABLE == 0x00000000)  &&  (INTTAPA0IVLY0_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0210
+  #if (INTTAUA0I5_ENABLE > 0x00000000)
+    .extern _INTTAUA0I5
+    jr _INTTAUA0I5
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0220
+  #if (INTTAUA0I6_ENABLE > 0x00000000)
+    .extern _INTTAUA0I6
+    jr _INTTAUA0I6
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0230
+  #if (INTTAUA0I7_ENABLE > 0x00000000)
+    .extern _INTTAUA0I7
+    jr _INTTAUA0I7
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0240
+  #if (INTTAUA0I8_ENABLE > 0x00000000)
+    .extern _INTTAUA0I8
+    jr _INTTAUA0I8
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0250
+  #if (INTTAUA0I9_ENABLE > 0x00000000)
+    .extern _INTTAUA0I9
+    jr _INTTAUA0I9
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0260
+  #if (INTTAUA0I10_ENABLE > 0x00000000)
+    .extern _INTTAUA0I10
+    jr _INTTAUA0I10
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0270
+  #if (INTTAUA0I11_ENABLE > 0x00000000)
+    .extern _INTTAUA0I11
+    jr _INTTAUA0I11
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0280
+  #if (INTTAUA0I12_ENABLE > 0x00000000)
+    .extern _INTTAUA0I12
+    jr _INTTAUA0I12
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0290
+  #if (INTTAUA0I13_ENABLE > 0x00000000)
+    .extern _INTTAUA0I13
+    jr _INTTAUA0I13
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x02a0
+  #if (INTTAUA0I14_ENABLE > 0x00000000)
+    .extern _INTTAUA0I14
+    jr _INTTAUA0I14
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x02b0
+  #if (INTTAUA0I15_ENABLE > 0x00000000)
+    .extern _INTTAUA0I15
+    jr _INTTAUA0I15
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x02c0
+  #if (INTTAUB1I0_ENABLE > 0x00000000)
+    .extern _INTTAUB1I0
+    jr _INTTAUB1I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x02d0
+  #if (INTTAUB1I1_ENABLE > 0x00000000)
+    .extern _INTTAUB1I1
+    jr _INTTAUB1I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x02e0
+  #if (INTTAUB1I2_ENABLE > 0x00000000)
+    .extern _INTTAUB1I2
+    jr _INTTAUB1I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x02f0
+  #if (INTTAUB1I3_ENABLE > 0x00000000)
+    .extern _INTTAUB1I3
+    jr _INTTAUB1I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0300
+  #if (INTTAUB1I4_ENABLE > 0x00000000)
+    .extern _INTTAUB1I4
+    jr _INTTAUB1I4
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0310
+  #if (INTTAUB1I5_ENABLE > 0x00000000)
+    .extern _INTTAUB1I5
+    jr _INTTAUB1I5
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0320
+  #if (INTTAUB1I6_ENABLE > 0x00000000)
+    .extern _INTTAUB1I6
+    jr _INTTAUB1I6
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0330
+  #if (INTTAUB1I7_ENABLE > 0x00000000)
+    .extern _INTTAUB1I7
+    jr _INTTAUB1I7
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0340
+  #if (INTTAUB1I8_ENABLE > 0x00000000)
+    .extern _INTTAUB1I8
+    jr _INTTAUB1I8
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0350
+  #if (INTTAUB1I9_ENABLE > 0x00000000)
+    .extern _INTTAUB1I9
+    jr _INTTAUB1I9
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0360
+  #if (INTTAUB1I10_ENABLE > 0x00000000)
+    .extern _INTTAUB1I10
+    jr _INTTAUB1I10
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0370
+  #if (INTTAUB1I11_ENABLE > 0x00000000)
+    .extern _INTTAUB1I11
+    jr _INTTAUB1I11
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0380
+  #if (INTTAUB1I12_ENABLE > 0x00000000)
+    .extern _INTTAUB1I12
+    jr _INTTAUB1I12
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0390
+  #if (INTTAUB1I13_ENABLE > 0x00000000)
+    .extern _INTTAUB1I13
+    jr _INTTAUB1I13
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x03a0
+  #if (INTTAUB1I14_ENABLE > 0x00000000)
+    .extern _INTTAUB1I14
+    jr _INTTAUB1I14
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x03b0
+  #if (INTTAUB1I15_ENABLE > 0x00000000)
+    .extern _INTTAUB1I15
+    jr _INTTAUB1I15
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x03c0
+  #if (INTTAUC2I0_ENABLE > 0x00000000)
+    .extern _INTTAUC2I0
+    jr _INTTAUC2I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x03d0
+  #if (INTTAUC2I1_ENABLE > 0x00000000)
+    .extern _INTTAUC2I1
+    jr _INTTAUC2I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x03e0
+  #if (INTTAUC2I2_ENABLE > 0x00000000)
+    .extern _INTTAUC2I2
+    jr _INTTAUC2I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x03f0
+  #if (INTTAUC2I3_ENABLE > 0x00000000)
+    .extern _INTTAUC2I3
+    jr _INTTAUC2I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0400
+  #if (INTTAUC2I4_ENABLE > 0x00000000)
+    .extern _INTTAUC2I4
+    jr _INTTAUC2I4
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0410
+  #if (INTTAUC2I5_ENABLE > 0x00000000)
+    .extern _INTTAUC2I5
+    jr _INTTAUC2I5
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0420
+  #if (INTTAUC2I6_ENABLE > 0x00000000)
+    .extern _INTTAUC2I6
+    jr _INTTAUC2I6
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0430
+  #if (INTTAUC2I7_ENABLE > 0x00000000)
+    .extern _INTTAUC2I7
+    jr _INTTAUC2I7
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0440
+  #if (INTTAUC2I8_ENABLE > 0x00000000)
+    .extern _INTTAUC2I8
+    jr _INTTAUC2I8
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0450
+  #if (INTTAUC2I9_ENABLE > 0x00000000)
+    .extern _INTTAUC2I9
+    jr _INTTAUC2I9
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0460
+  #if (INTTAUC2I10_ENABLE > 0x00000000)
+    .extern _INTTAUC2I10
+    jr _INTTAUC2I10
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0470
+  #if (INTTAUC2I11_ENABLE > 0x00000000)
+    .extern _INTTAUC2I11
+    jr _INTTAUC2I11
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0480
+  #if (INTTAUC2I12_ENABLE > 0x00000000)
+    .extern _INTTAUC2I12
+    jr _INTTAUC2I12
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0490
+  #if (INTTAUC2I13_ENABLE > 0x00000000)
+    .extern _INTTAUC2I13
+    jr _INTTAUC2I13
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x04a0
+  #if (INTTAUC2I14_ENABLE > 0x00000000)
+    .extern _INTTAUC2I14
+    jr _INTTAUC2I14
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x04b0
+  #if (INTTAUC2I15_ENABLE > 0x00000000)
+    .extern _INTTAUC2I15
+    jr _INTTAUC2I15
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x04c0
+  #if (INTTAUC3I0_ENABLE > 0x00000000)
+    .extern _INTTAUC3I0
+    jr _INTTAUC3I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x04d0
+  #if (INTTAUC3I1_ENABLE > 0x00000000)
+    .extern _INTTAUC3I1
+    jr _INTTAUC3I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x04e0
+  #if (INTTAUC3I2_ENABLE > 0x00000000)
+    .extern _INTTAUC3I2
+    jr _INTTAUC3I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x04f0
+  #if (INTTAUC3I3_ENABLE > 0x00000000)
+    .extern _INTTAUC3I3
+    jr _INTTAUC3I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0500
+  #if (INTTAUC3I4_ENABLE > 0x00000000)
+    .extern _INTTAUC3I4
+    jr _INTTAUC3I4
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0510
+  #if (INTTAUC3I5_ENABLE > 0x00000000)
+    .extern _INTTAUC3I5
+    jr _INTTAUC3I5
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0520
+  #if (INTTAUC3I6_ENABLE > 0x00000000)
+    .extern _INTTAUC3I6
+    jr _INTTAUC3I6
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0530
+  #if (INTTAUC3I7_ENABLE > 0x00000000)
+    .extern _INTTAUC3I7
+    jr _INTTAUC3I7
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0540
+  #if (INTTAUC3I8_ENABLE > 0x00000000)
+    .extern _INTTAUC3I8
+    jr _INTTAUC3I8
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0550
+  #if (INTTAUC3I9_ENABLE > 0x00000000)
+    .extern _INTTAUC3I9
+    jr _INTTAUC3I9
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0560
+  #if (INTTAUC3I10_ENABLE > 0x00000000)
+    .extern _INTTAUC3I10
+    jr _INTTAUC3I10
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0570
+  #if (INTTAUC3I11_ENABLE > 0x00000000)
+    .extern _INTTAUC3I11
+    jr _INTTAUC3I11
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0580
+  #if (INTTAUC3I12_ENABLE > 0x00000000)
+    .extern _INTTAUC3I12
+    jr _INTTAUC3I12
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0590
+  #if (INTTAUC3I13_ENABLE > 0x00000000)
+    .extern _INTTAUC3I13
+    jr _INTTAUC3I13
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x05a0
+  #if (INTTAUC3I14_ENABLE > 0x00000000)
+    .extern _INTTAUC3I14
+    jr _INTTAUC3I14
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x05b0
+  #if (INTTAUC3I15_ENABLE > 0x00000000)
+    .extern _INTTAUC3I15
+    jr _INTTAUC3I15
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x05c0
+  #if (INTTAUC4I0_ENABLE > 0x00000000)
+    .extern _INTTAUC4I0
+    jr _INTTAUC4I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x05d0
+  #if (INTTAUC4I1_ENABLE > 0x00000000)
+    .extern _INTTAUC4I1
+    jr _INTTAUC4I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x05e0
+  #if (INTTAUC4I2_ENABLE > 0x00000000)
+    .extern _INTTAUC4I2
+    jr _INTTAUC4I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x05f0
+  #if (INTTAUC4I3_ENABLE > 0x00000000)
+    .extern _INTTAUC4I3
+    jr _INTTAUC4I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0600
+  #if (INTTAUC4I4_ENABLE > 0x00000000)
+    .extern _INTTAUC4I4
+    jr _INTTAUC4I4
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0610
+  #if (INTTAUC4I5_ENABLE > 0x00000000)
+    .extern _INTTAUC4I5
+    jr _INTTAUC4I5
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0620
+  #if (INTTAUC4I6_ENABLE > 0x00000000)
+    .extern _INTTAUC4I6
+    jr _INTTAUC4I6
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0630
+  #if (INTTAUC4I7_ENABLE > 0x00000000)
+    .extern _INTTAUC4I7
+    jr _INTTAUC4I7
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0640
+  #if (INTTAUC4I8_ENABLE > 0x00000000)
+    .extern _INTTAUC4I8
+    jr _INTTAUC4I8
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0650
+  #if (INTTAUC4I9_ENABLE > 0x00000000)
+    .extern _INTTAUC4I9
+    jr _INTTAUC4I9
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0660
+  #if (INTTAUC4I10_ENABLE > 0x00000000)
+    .extern _INTTAUC4I10
+    jr _INTTAUC4I10
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0670
+  #if (INTTAUC4I11_ENABLE > 0x00000000)
+    .extern _INTTAUC4I11
+    jr _INTTAUC4I11
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0680
+  #if (INTTAUC4I12_ENABLE > 0x00000000)
+    .extern _INTTAUC4I12
+    jr _INTTAUC4I12
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0690
+  #if (INTTAUC4I13_ENABLE > 0x00000000)
+    .extern _INTTAUC4I13
+    jr _INTTAUC4I13
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x06a0
+  #if (INTTAUC4I14_ENABLE > 0x00000000)
+    .extern _INTTAUC4I14
+    jr _INTTAUC4I14
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x06b0
+  #if (INTTAUC4I15_ENABLE > 0x00000000)
+    .extern _INTTAUC4I15
+    jr _INTTAUC4I15
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x06c0
+  #if (INTADCA0ERR_ENABLE > 0x00000000)
+    .extern _INTADCA0ERR
+    jr _INTADCA0ERR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x06d0
+  #if (INTADCA0I0_ENABLE > 0x00000000)
+    .extern _INTADCA0I0
+    jr _INTADCA0I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x06e0
+  #if (INTADCA0I1_ENABLE > 0x00000000)
+    .extern _INTADCA0I1
+    jr _INTADCA0I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x06f0
+  #if (INTADCA0I2_ENABLE > 0x00000000)
+    .extern _INTADCA0I2
+    jr _INTADCA0I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0700
+  #if (INTADCA0LLT_ENABLE > 0x00000000)
+    .extern _INTADCA0LLT
+    jr _INTADCA0LLT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0710
+  #if (INTFCNWUP_ENABLE > 0x00000000)
+    .extern _INTFCNWUP
+    jr _INTFCNWUP
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0720
+  #if (INTFCN0ERR_ENABLE > 0x00000000)
+    .extern _INTFCN0ERR
+    jr _INTFCN0ERR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0730
+  #if (INTFCN0REC_ENABLE > 0x00000000)
+    .extern _INTFCN0REC
+    jr _INTFCN0REC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0740
+  #if (INTFCN0TRX_ENABLE > 0x00000000)
+    .extern _INTFCN0TRX
+    jr _INTFCN0TRX
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0750
+  #if (INTCSIG0IRE_ENABLE > 0x00000000)
+    .extern _INTCSIG0IRE
+    jr _INTCSIG0IRE
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0760
+  #if (INTCSIG0IR_ENABLE > 0x00000000)
+    .extern _INTCSIG0IR
+    jr _INTCSIG0IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0770
+  #if (INTCSIG0IC_ENABLE > 0x00000000)
+    .extern _INTCSIG0IC
+    jr _INTCSIG0IC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x07f0
+  #if (INTDMA0_ENABLE > 0x00000000)
+    .extern _INTDMA0
+    jr _INTDMA0
+  #endif
+  #if (INTCT0_ENABLE > 0x00000000)
+    .extern _INTCT0
+    jr _INTCT0
+  #endif
+  #if (  (INTDMA0_ENABLE == 0x00000000)  &&  (INTCT0_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0800
+  #if (INTDMA1_ENABLE > 0x00000000)
+    .extern _INTDMA1
+    jr _INTDMA1
+  #endif
+  #if (INTCT1_ENABLE > 0x00000000)
+    .extern _INTCT1
+    jr _INTCT1
+  #endif
+  #if (  (INTDMA1_ENABLE == 0x00000000)  &&  (INTCT1_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0810
+  #if (INTDMA2_ENABLE > 0x00000000)
+    .extern _INTDMA2
+    jr _INTDMA2
+  #endif
+  #if (INTCT2_ENABLE > 0x00000000)
+    .extern _INTCT2
+    jr _INTCT2
+  #endif
+  #if (  (INTDMA2_ENABLE == 0x00000000)  &&  (INTCT2_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0820
+  #if (INTDMA3_ENABLE > 0x00000000)
+    .extern _INTDMA3
+    jr _INTDMA3
+  #endif
+  #if (INTCT3_ENABLE > 0x00000000)
+    .extern _INTCT3
+    jr _INTCT3
+  #endif
+  #if (  (INTDMA3_ENABLE == 0x00000000)  &&  (INTCT3_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0830
+  #if (INTDMA4_ENABLE > 0x00000000)
+    .extern _INTDMA4
+    jr _INTDMA4
+  #endif
+  #if (INTCT4_ENABLE > 0x00000000)
+    .extern _INTCT4
+    jr _INTCT4
+  #endif
+  #if (  (INTDMA4_ENABLE == 0x00000000)  &&  (INTCT4_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0840
+  #if (INTDMA5_ENABLE > 0x00000000)
+    .extern _INTDMA5
+    jr _INTDMA5
+  #endif
+  #if (INTCT5_ENABLE > 0x00000000)
+    .extern _INTCT5
+    jr _INTCT5
+  #endif
+  #if (  (INTDMA5_ENABLE == 0x00000000)  &&  (INTCT5_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0850
+  #if (INTDMA6_ENABLE > 0x00000000)
+    .extern _INTDMA6
+    jr _INTDMA6
+  #endif
+  #if (INTCT6_ENABLE > 0x00000000)
+    .extern _INTCT6
+    jr _INTCT6
+  #endif
+  #if (  (INTDMA6_ENABLE == 0x00000000)  &&  (INTCT6_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0860
+  #if (INTDMA7_ENABLE > 0x00000000)
+    .extern _INTDMA7
+    jr _INTDMA7
+  #endif
+  #if (INTCT7_ENABLE > 0x00000000)
+    .extern _INTCT7
+    jr _INTCT7
+  #endif
+  #if (  (INTDMA7_ENABLE == 0x00000000)  &&  (INTCT7_ENABLE == 0x00000000) )
+    jr _unused_isr
+  #endif
+
+  .offset 0x0870
+  #if (INTFL_ENABLE > 0x00000000)
+    .extern _INTFL
+    jr _INTFL
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0880
+  #if (INTIICB0IS_ENABLE > 0x00000000)
+    .extern _INTIICB0IS
+    jr _INTIICB0IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0890
+  #if (INTIICB0IA_ENABLE > 0x00000000)
+    .extern _INTIICB0IA
+    jr _INTIICB0IA
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x08c0
+  #if (INTFCN1ERR_ENABLE > 0x00000000)
+    .extern _INTFCN1ERR
+    jr _INTFCN1ERR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x08d0
+  #if (INTFCN1REC_ENABLE > 0x00000000)
+    .extern _INTFCN1REC
+    jr _INTFCN1REC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x08e0
+  #if (INTFCN1TRX_ENABLE > 0x00000000)
+    .extern _INTFCN1TRX
+    jr _INTFCN1TRX
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x08f0
+  #if (INTTAUJ0I0_ENABLE > 0x00000000)
+    .extern _INTTAUJ0I0
+    jr _INTTAUJ0I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0900
+  #if (INTTAUJ0I1_ENABLE > 0x00000000)
+    .extern _INTTAUJ0I1
+    jr _INTTAUJ0I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0910
+  #if (INTTAUJ0I2_ENABLE > 0x00000000)
+    .extern _INTTAUJ0I2
+    jr _INTTAUJ0I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0920
+  #if (INTTAUJ0I3_ENABLE > 0x00000000)
+    .extern _INTTAUJ0I3
+    jr _INTTAUJ0I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0930
+  #if (INTTAUJ1I0_ENABLE > 0x00000000)
+    .extern _INTTAUJ1I0
+    jr _INTTAUJ1I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0940
+  #if (INTTAUJ1I1_ENABLE > 0x00000000)
+    .extern _INTTAUJ1I1
+    jr _INTTAUJ1I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0950
+  #if (INTTAUJ1I2_ENABLE > 0x00000000)
+    .extern _INTTAUJ1I2
+    jr _INTTAUJ1I2
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0960
+  #if (INTTAUJ1I3_ENABLE > 0x00000000)
+    .extern _INTTAUJ1I3
+    jr _INTTAUJ1I3
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x09b0
+  #if (INTOSTM0_ENABLE > 0x00000000)
+    .extern _INTOSTM0
+    jr _INTOSTM0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0a80
+  #if (INTFCN2ERR_ENABLE > 0x00000000)
+    .extern _INTFCN2ERR
+    jr _INTFCN2ERR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0a90
+  #if (INTFCN2REC_ENABLE > 0x00000000)
+    .extern _INTFCN2REC
+    jr _INTFCN2REC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0aa0
+  #if (INTFCN2TRX_ENABLE > 0x00000000)
+    .extern _INTFCN2TRX
+    jr _INTFCN2TRX
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0ab0
+  #if (INTCSIH0IC_ENABLE > 0x00000000)
+    .extern _INTCSIH0IC
+    jr _INTCSIH0IC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0ac0
+  #if (INTCSIH0IJC_ENABLE > 0x00000000)
+    .extern _INTCSIH0IJC
+    jr _INTCSIH0IJC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0b00
+  #if (INTCSIH0IRE_ENABLE > 0x00000000)
+    .extern _INTCSIH0IRE
+    jr _INTCSIH0IRE
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0b10
+  #if (INTCSIH0IR_ENABLE > 0x00000000)
+    .extern _INTCSIH0IR
+    jr _INTCSIH0IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0b20
+  #if (INTCSIG4IRE_ENABLE > 0x00000000)
+    .extern _INTCSIG4IRE
+    jr _INTCSIG4IRE
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0b30
+  #if (INTCSIG4IR_ENABLE > 0x00000000)
+    .extern _INTCSIG4IR
+    jr _INTCSIG4IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0b40
+  #if (INTCSIG4IC_ENABLE > 0x00000000)
+    .extern _INTCSIG4IC
+    jr _INTCSIG4IC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0c30
+  #if (INTENCA0I0_ENABLE > 0x00000000)
+    .extern _INTENCA0I0
+    jr _INTENCA0I0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0c40
+  #if (INTENCA0I1_ENABLE > 0x00000000)
+    .extern _INTENCA0I1
+    jr _INTENCA0I1
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0c50
+  #if (INTENCA0IUD_ENABLE > 0x00000000)
+    .extern _INTENCA0IUD
+    jr _INTENCA0IUD
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0c60
+  #if (INTENCA0IEC_ENABLE > 0x00000000)
+    .extern _INTENCA0IEC
+    jr _INTENCA0IEC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0c70
+  #if (INTENCA0IOV_ENABLE > 0x00000000)
+    .extern _INTENCA0IOV
+    jr _INTENCA0IOV
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0c90
+  #if (INTLMA2IS_ENABLE > 0x00000000)
+    .extern _INTLMA2IS
+    jr _INTLMA2IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0ca0
+  #if (INTLMA2IR_ENABLE > 0x00000000)
+    .extern _INTLMA2IR
+    jr _INTLMA2IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0cb0
+  #if (INTLMA2IT_ENABLE > 0x00000000)
+    .extern _INTLMA2IT
+    jr _INTLMA2IT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0cc0
+  #if (INTLMA3IS_ENABLE > 0x00000000)
+    .extern _INTLMA3IS
+    jr _INTLMA3IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0cd0
+  #if (INTLMA3IR_ENABLE > 0x00000000)
+    .extern _INTLMA3IR
+    jr _INTLMA3IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0ce0
+  #if (INTLMA3IT_ENABLE > 0x00000000)
+    .extern _INTLMA3IT
+    jr _INTLMA3IT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0cf0
+  #if (INTLMA4IS_ENABLE > 0x00000000)
+    .extern _INTLMA4IS
+    jr _INTLMA4IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d00
+  #if (INTLMA4IR_ENABLE > 0x00000000)
+    .extern _INTLMA4IR
+    jr _INTLMA4IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d10
+  #if (INTLMA4IT_ENABLE > 0x00000000)
+    .extern _INTLMA4IT
+    jr _INTLMA4IT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d20
+  #if (INTCSIH2IRE_ENABLE > 0x00000000)
+    .extern _INTCSIH2IRE
+    jr _INTCSIH2IRE
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d30
+  #if (INTCSIH2IR_ENABLE > 0x00000000)
+    .extern _INTCSIH2IR
+    jr _INTCSIH2IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d40
+  #if (INTCSIH2IC_ENABLE > 0x00000000)
+    .extern _INTCSIH2IC
+    jr _INTCSIH2IC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d50
+  #if (INTCSIH2IJC_ENABLE > 0x00000000)
+    .extern _INTCSIH2IJC
+    jr _INTCSIH2IJC
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d80
+  #if (INTP11_ENABLE > 0x00000000)
+    .extern _INTP11
+    jr _INTP11
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0d90
+  #if (INTP12_ENABLE > 0x00000000)
+    .extern _INTP12
+    jr _INTP12
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0da0
+  #if (INTP13_ENABLE > 0x00000000)
+    .extern _INTP13
+    jr _INTP13
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0db0
+  #if (INTP14_ENABLE > 0x00000000)
+    .extern _INTP14
+    jr _INTP14
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0e40
+  #if (INTKR0_ENABLE > 0x00000000)
+    .extern _INTKR0
+    jr _INTKR0
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0e90
+  #if (INTLMA5IS_ENABLE > 0x00000000)
+    .extern _INTLMA5IS
+    jr _INTLMA5IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0ea0
+  #if (INTLMA5IR_ENABLE > 0x00000000)
+    .extern _INTLMA5IR
+    jr _INTLMA5IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x0eb0
+  #if (INTLMA5IT_ENABLE > 0x00000000)
+    .extern _INTLMA5IT
+    jr _INTLMA5IT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x1000
+  #if (INTLMA10IS_ENABLE > 0x00000000)
+    .extern _INTLMA10IS
+    jr _INTLMA10IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x1010
+  #if (INTLMA10IR_ENABLE > 0x00000000)
+    .extern _INTLMA10IR
+    jr _INTLMA10IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x1020
+  #if (INTLMA10IT_ENABLE > 0x00000000)
+    .extern _INTLMA10IT
+    jr _INTLMA10IT
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x1030
+  #if (INTLMA11IS_ENABLE > 0x00000000)
+    .extern _INTLMA11IS
+    jr _INTLMA11IS
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x1040
+  #if (INTLMA11IR_ENABLE > 0x00000000)
+    .extern _INTLMA11IR
+    jr _INTLMA11IR
+  #else
+    jr _unused_isr
+  #endif
+
+  .offset 0x1050
+  #if (INTLMA11IT_ENABLE > 0x00000000)
+    .extern _INTLMA11IT
+    jr _INTLMA11IT
+  #else
+    jr _unused_isr
+  #endif
+
+
+#endif   /* __OS_HANDLES__ */  
